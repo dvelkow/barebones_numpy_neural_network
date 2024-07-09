@@ -42,8 +42,5 @@ def main():
     # Plot loss history
     plot_loss(nn.loss_history)
 
-    # Plot decision boundary
-    nn.plot_decision_boundary(X, y)
-
 if __name__ == "__main__":
     main()

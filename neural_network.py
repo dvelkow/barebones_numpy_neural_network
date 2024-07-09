@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 class NeuralNetwork:
     def __init__(self, layer_sizes, learning_rate=0.01, regularization=0.01):
@@ -57,12 +56,11 @@ class NeuralNetwork:
             visualizer.initialize()
         
         for epoch in range(epochs):
-            X_augmented, y_augmented = self.augment_data(X, y)
-            permutation = np.random.permutation(X_augmented.shape[0])
-            X_shuffled = X_augmented[permutation]
-            y_shuffled = y_augmented[permutation]
+            permutation = np.random.permutation(X.shape[0])
+            X_shuffled = X[permutation]
+            y_shuffled = y[permutation]
             
-            for i in range(0, X_shuffled.shape[0], batch_size):
+            for i in range(0, X.shape[0], batch_size):
                 X_batch = X_shuffled[i:i+batch_size]
                 y_batch = y_shuffled[i:i+batch_size]
                 
@@ -72,9 +70,6 @@ class NeuralNetwork:
             
             train_loss = self.calculate_loss(X, y)
             self.loss_history.append(train_loss)
-            
-            # Update learning rate
-            self.learning_rate = self.learning_rate_scheduler(epoch)
             
             if validation_data:
                 val_loss = self.calculate_loss(validation_data[0], validation_data[1])
@@ -94,32 +89,3 @@ class NeuralNetwork:
 
     def predict(self, X):
         return self.forward(X)
-
-    def augment_data(self, X, y, noise_level=0.05):
-        # Add small Gaussian noise to the input data
-        X_noisy = X + np.random.normal(0, noise_level, X.shape)
-        return np.vstack((X, X_noisy)), np.vstack((y, y))
-
-    def learning_rate_scheduler(self, epoch, initial_lr=0.01, decay_rate=0.1, decay_steps=1000):
-        return initial_lr * (1 / (1 + decay_rate * epoch / decay_steps))
-
-    def plot_decision_boundary(self, X, y):
-        # Only works for 2D input
-        if X.shape[1] != 2:
-            print("This method only works for 2D input data")
-            return
-
-        x_min, x_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
-        y_min, y_max = X[:, 1].min() - 0.5, X[:, 1].max() + 0.5
-        xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.02),
-                             np.arange(y_min, y_max, 0.02))
-        Z = self.predict(np.c_[xx.ravel(), yy.ravel()])
-        Z = Z.reshape(xx.shape)
-
-        plt.figure(figsize=(10, 8))
-        plt.contourf(xx, yy, Z, alpha=0.8, cmap=plt.cm.RdYlBu)
-        plt.scatter(X[:, 0], X[:, 1], c=y.ravel(), cmap=plt.cm.RdYlBu, edgecolor='black')
-        plt.xlabel('Feature 1')
-        plt.ylabel('Feature 2')
-        plt.title('Decision Boundary')
-        plt.show()
