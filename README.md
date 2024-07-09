@@ -47,11 +47,8 @@ Building this helped me understand:
 - The impact of different activation functions on network performance and training dynamics
 - Why we need activation functions
 - The impact of different activation functions on network performance and training dynamics
-The importance of proper weight initialization in preventing issues like vanishing/exploding gradients
-How regularization techniques help in reducing overfitting and improving generalization
-The trade-offs between batch size, learning rate, and convergence speed in gradient descent
 
 ## Future Ideas
 
 - Add more activation functions
-- Maybe tackle some complex dataset with it
+- Maybe tackle some complex datasets with it
