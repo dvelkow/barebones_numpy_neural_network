@@ -18,6 +18,7 @@ This is a from-scratch implementation of a neural network using NumPy for core f
 - **Real-time Training Visualization**: You see it update Real Time on the terminal
 - **XOR Problem Solver**: The network is demonstrating solving the XOR problem, which is a classic benchmark for neural networks.
 - **Loss History Plotting**: Through a graph made with the help of Matplotlib after the training finishes you can see how your network improved over time
+- **Flexible Input**: Can be adapted to solve various binary classification problems.
 
 ## How to Use
 
@@ -38,17 +39,29 @@ This is a from-scratch implementation of a neural network using NumPy for core f
 
 ## Customization
 
-The `main()` function is basically the customizable part, by changing the values there one could solve different problems.
+Modify the `main()` function in nn_trainer.py if you want to experiment with different network configurations, you are free to:
+
+Change `layer_sizes` to adjust the network architecture
+Modify `learning_rate` and 'regularization' parameters
+Adjust `epochs` and `batch_size` for different training dynamics
+
+Example:
+```
+layer_sizes = [2, 8, 8, 1]  # Two hidden layers with 8 neurons each
+nn = NeuralNetwork(layer_sizes=layer_sizes, learning_rate=0.05, regularization=0.01) #decreased the learning_rate
+nn.train(X, y, epochs=10000, batch_size=4, visualizer=visualizer) #changed the epochs (might cause overfitting)
+```
 
 ## What I Learned in the process
 
 Building this helped me understand:
-- How backpropagation actually works, because before that I had experience with it only through libraries and never dived in the processe
+- How Backpropagation actually works, because before that I had experience with it only through libraries and never dived in the processes
+- How Forward Propagation work, more specifically how data flows through a neural network and how predictions are made
 - The impact of different activation functions on network performance and training dynamics
-- Why we need activation functions
-- The impact of different activation functions on network performance and training dynamics
+- The process of handling non-linear problems through XOR
 
 ## Future Ideas
 
 - Add more activation functions
 - Maybe tackle some complex datasets with it
+- Extend the network to handle multi-class classification problems
