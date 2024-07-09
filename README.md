@@ -33,7 +33,7 @@ This is a from-scratch implementation of a neural network using NumPy for core f
 
 3. Run the main script:
    ```
-   python neural_network.py
+   python3 nn_trainer.py
    ```
 
 ## Customization
