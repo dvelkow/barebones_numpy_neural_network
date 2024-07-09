@@ -1,8 +1,5 @@
 import numpy as np
-from blessed import Terminal
-import time
 import matplotlib.pyplot as plt
-import random
 
 class NeuralNetwork:
     def __init__(self, layer_sizes, learning_rate=0.01, regularization=0.01):
@@ -55,16 +52,17 @@ class NeuralNetwork:
             self.weights[i] -= self.learning_rate * dW[i]
             self.biases[i] -= self.learning_rate * db[i]
 
-    def train(self, X, y, epochs, batch_size, validation_data=None, term=None):
-        if term:
-            self.initialize_visual(term)
+    def train(self, X, y, epochs, batch_size, validation_data=None, visualizer=None):
+        if visualizer:
+            visualizer.initialize()
         
         for epoch in range(epochs):
-            permutation = np.random.permutation(X.shape[0])
-            X_shuffled = X[permutation]
-            y_shuffled = y[permutation]
+            X_augmented, y_augmented = self.augment_data(X, y)
+            permutation = np.random.permutation(X_augmented.shape[0])
+            X_shuffled = X_augmented[permutation]
+            y_shuffled = y_augmented[permutation]
             
-            for i in range(0, X.shape[0], batch_size):
+            for i in range(0, X_shuffled.shape[0], batch_size):
                 X_batch = X_shuffled[i:i+batch_size]
                 y_batch = y_shuffled[i:i+batch_size]
                 
@@ -75,15 +73,18 @@ class NeuralNetwork:
             train_loss = self.calculate_loss(X, y)
             self.loss_history.append(train_loss)
             
+            # Update learning rate
+            self.learning_rate = self.learning_rate_scheduler(epoch)
+            
             if validation_data:
                 val_loss = self.calculate_loss(validation_data[0], validation_data[1])
-                if term:
-                    self.update_visual(term, epoch, epochs, train_loss, val_loss)
+                if visualizer:
+                    visualizer.update(epoch, epochs, train_loss, val_loss)
                 elif epoch % 100 == 0:
                     print(f'Epoch {epoch}, Train Loss: {train_loss:.6f}, Val Loss: {val_loss:.6f}')
             else:
-                if term:
-                    self.update_visual(term, epoch, epochs, train_loss)
+                if visualizer:
+                    visualizer.update(epoch, epochs, train_loss)
                 elif epoch % 100 == 0:
                     print(f'Epoch {epoch}, Loss: {train_loss:.6f}')
 
@@ -94,80 +95,31 @@ class NeuralNetwork:
     def predict(self, X):
         return self.forward(X)
 
-    def initialize_visual(self, term):
-        print(term.clear)
-        print(term.black_on_khaki(term.center('Neural Network Training')))
-        print('\n' * 2)
-        print(term.move_y(term.height // 2 - 10))
-        
-        layer_names = ['Input', 'Hidden', 'Hidden', 'Output']
-        colors = [term.olivedrab1, term.dodgerblue1, term.dodgerblue1, term.orangered1]
-        for i, (name, size, color) in enumerate(zip(layer_names, self.layer_sizes, colors)):
-            y_pos = term.height // 2 - 5 + i * 3
-            print(term.move_xy(term.width // 2 - 10, y_pos) + color(f"{name} Layer: {size} nodes"))
-        
-        print(term.move_xy(0, term.height - 2) + "Press Ctrl+C to stop training")
+    def augment_data(self, X, y, noise_level=0.05):
+        # Add small Gaussian noise to the input data
+        X_noisy = X + np.random.normal(0, noise_level, X.shape)
+        return np.vstack((X, X_noisy)), np.vstack((y, y))
 
-    def update_visual(self, term, epoch, total_epochs, train_loss, val_loss=None):
-        progress = int((epoch + 1) / total_epochs * 50)
-        
-        with term.location(0, 3):
-            print(term.blue(f"Epoch: {epoch + 1}/{total_epochs}"))
-            print(term.green(f"Train Loss: {train_loss:.6f}"))
-            if val_loss is not None:
-                print(term.yellow(f"Validation Loss: {val_loss:.6f}"))
-            print(term.red('Progress: [') + term.goldenrod(('=' * progress).ljust(50)) + term.red(']'))
-        
-        # Animate network activity
-        for i, size in enumerate(self.layer_sizes):
-            y_pos = term.height // 2 - 5 + i * 3
-            x_pos = term.width // 2 + 15
-            active_node = random.randint(0, size - 1)
-            with term.location(x_pos, y_pos):
-                nodes = '○' * size
-                nodes = nodes[:active_node] + '●' + nodes[active_node+1:]
-                print(term.khaki(nodes))
-        
-        time.sleep(0.0033) 
+    def learning_rate_scheduler(self, epoch, initial_lr=0.01, decay_rate=0.1, decay_steps=1000):
+        return initial_lr * (1 / (1 + decay_rate * epoch / decay_steps))
 
-    def plot_loss(self):
-        plt.figure(figsize=(10, 6))
-        plt.plot(self.loss_history)
-        plt.title('Training Loss over Epochs')
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss')
+    def plot_decision_boundary(self, X, y):
+        # Only works for 2D input
+        if X.shape[1] != 2:
+            print("This method only works for 2D input data")
+            return
+
+        x_min, x_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
+        y_min, y_max = X[:, 1].min() - 0.5, X[:, 1].max() + 0.5
+        xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.02),
+                             np.arange(y_min, y_max, 0.02))
+        Z = self.predict(np.c_[xx.ravel(), yy.ravel()])
+        Z = Z.reshape(xx.shape)
+
+        plt.figure(figsize=(10, 8))
+        plt.contourf(xx, yy, Z, alpha=0.8, cmap=plt.cm.RdYlBu)
+        plt.scatter(X[:, 0], X[:, 1], c=y.ravel(), cmap=plt.cm.RdYlBu, edgecolor='black')
+        plt.xlabel('Feature 1')
+        plt.ylabel('Feature 2')
+        plt.title('Decision Boundary')
         plt.show()
-
-def main():
-    term = Terminal()
-    
-    # XOR Dataset
-    X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
-    y = np.array([[0], [1], [1], [0]])
-    
-    # Initialization
-    nn = NeuralNetwork(layer_sizes=[2, 4, 4, 1], learning_rate=0.1, regularization=0.01)
-    
-    try:
-        with term.fullscreen(), term.hidden_cursor():
-            # Training
-            nn.train(X, y, epochs=5000, batch_size=4, term=term)
-    except KeyboardInterrupt:
-        pass
-    
-    # Making predictions
-    predictions = nn.predict(X)
-    
-    term.clear()
-    print(term.black_on_khaki(term.center('Training Complete')))
-    print("\nPredictions:")
-    for i, pred in enumerate(predictions):
-        print(term.bold(f"Input: {X[i]}") + term.move_right(5) + 
-              term.green(f"Predicted: {pred[0]:.4f}") + term.move_right(5) + 
-              term.blue(f"Actual: {y[i][0]}"))
-    
-    # Plot loss history
-    nn.plot_loss()
-
-if __name__ == "__main__":
-    main()
