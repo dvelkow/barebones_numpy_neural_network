@@ -2,6 +2,7 @@ import numpy as np
 from blessed import Terminal
 import time
 import matplotlib.pyplot as plt
+import random
 
 class NeuralNetwork:
     def __init__(self, layer_sizes, learning_rate=0.01, regularization=0.01):
@@ -95,33 +96,39 @@ class NeuralNetwork:
 
     def initialize_visual(self, term):
         print(term.clear)
-        print(term.black_on_darkkhaki(term.center('Neural Network Training')))
+        print(term.black_on_khaki(term.center('Neural Network Training')))
         print('\n' * 2)
-        print("Epoch: ")
-        print("Train Loss: ")
-        print("Progress: ")
-        print('\n' * 2)
-        print(term.black_on_darkkhaki(term.center('Network Architecture')))
+        print(term.move_y(term.height // 2 - 10) + term.center('Network Architecture'))
         
-        layer_names = ['Input'] + ['Hidden'] * (len(self.layer_sizes) - 2) + ['Output']
-        for i, size in enumerate(self.layer_sizes):
-            print(f"\n{layer_names[i]} Layer ({size} nodes)")
-            print("●" * size)
+        layer_names = ['Input', 'Hidden', 'Hidden', 'Output']
+        colors = [term.olivedrab1, term.dodgerblue1, term.dodgerblue1, term.orangered1]
+        for i, (name, size, color) in enumerate(zip(layer_names, self.layer_sizes, colors)):
+            y_pos = term.height // 2 - 5 + i * 3
+            print(term.move_xy(term.width // 2 - 10, y_pos) + color(f"{name} Layer: {size} nodes"))
         
-        print('\n' * 2)
-        print("Press Ctrl+C to stop training")
+        print(term.move_xy(0, term.height - 2) + "Press Ctrl+C to stop training")
 
     def update_visual(self, term, epoch, total_epochs, train_loss, val_loss=None):
         progress = int((epoch + 1) / total_epochs * 50)
         
         with term.location(0, 3):
-            print(f"Epoch: {epoch + 1}/{total_epochs}")
-            print(f"Train Loss: {train_loss:.6f}")
+            print(term.blue(f"Epoch: {epoch + 1}/{total_epochs}"))
+            print(term.green(f"Train Loss: {train_loss:.6f}"))
             if val_loss is not None:
-                print(f"Validation Loss: {val_loss:.6f}")
-            print('Progress: [' + '=' * progress + ' ' * (50 - progress) + ']')
+                print(term.yellow(f"Validation Loss: {val_loss:.6f}"))
+            print(term.red('Progress: [') + term.goldenrod(('=' * progress).ljust(50)) + term.red(']'))
         
-        time.sleep(0.01)
+        # Animate network activity
+        for i, size in enumerate(self.layer_sizes):
+            y_pos = term.height // 2 - 5 + i * 3
+            x_pos = term.width // 2 + 15
+            active_node = random.randint(0, size - 1)
+            with term.location(x_pos, y_pos):
+                nodes = '○' * size
+                nodes = nodes[:active_node] + '●' + nodes[active_node+1:]
+                print(term.khaki(nodes))
+        
+        time.sleep(0.05)
 
     def plot_loss(self):
         plt.figure(figsize=(10, 6))
@@ -152,10 +159,12 @@ def main():
     predictions = nn.predict(X)
     
     term.clear()
-    print(term.black_on_darkkhaki(term.center('Training Complete')))
+    print(term.black_on_khaki(term.center('Training Complete')))
     print("\nPredictions:")
     for i, pred in enumerate(predictions):
-        print(f"Input: {X[i]}, Predicted: {pred[0]:.4f}, Actual: {y[i][0]}")
+        print(term.bold(f"Input: {X[i]}") + term.move_right(5) + 
+              term.green(f"Predicted: {pred[0]:.4f}") + term.move_right(5) + 
+              term.blue(f"Actual: {y[i][0]}"))
     
     # Plot loss history
     nn.plot_loss()
