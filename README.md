@@ -8,7 +8,8 @@ This is a from-scratch implementation of a neural network using NumPy for core f
 ![image](https://github.com/dvelkow/barebones_numpy_neural_network/assets/71397644/32363b19-1e80-4143-ab3c-faa737d0fb03)
 
 
-![image](https://github.com/dvelkow/barebones_numpy_neural_network/assets/71397644/d5207a69-7940-4259-949f-61884ab0e7ce)
+![image](https://github.com/dvelkow/barebones_numpy_neural_network/assets/71397644/8c6e728b-4dd9-43fc-9db0-374d69a1b441)
+
 
 
 ## Features
