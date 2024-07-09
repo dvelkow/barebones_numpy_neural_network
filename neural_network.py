@@ -128,7 +128,7 @@ class NeuralNetwork:
                 nodes = nodes[:active_node] + '●' + nodes[active_node+1:]
                 print(term.khaki(nodes))
         
-        time.sleep(0.05)
+        time.sleep(0.0033) 
 
     def plot_loss(self):
         plt.figure(figsize=(10, 6))
