@@ -98,7 +98,7 @@ class NeuralNetwork:
         print(term.clear)
         print(term.black_on_khaki(term.center('Neural Network Training')))
         print('\n' * 2)
-        print(term.move_y(term.height // 2 - 10) + term.center('Network Architecture'))
+        print(term.move_y(term.height // 2 - 10))
         
         layer_names = ['Input', 'Hidden', 'Hidden', 'Output']
         colors = [term.olivedrab1, term.dodgerblue1, term.dodgerblue1, term.orangered1]
